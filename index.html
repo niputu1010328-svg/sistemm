@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab Maya Interaktif: Tri Kaya Parisudha - SD 2 Negari</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        baligold: '#E6A100',
+                        balired: '#9E2A2B',
+                        baliyellow: '#FFD166',
+                        balidark: '#2B2D42',
+                        balicream: '#FFF9EE',
+                        baligreen: '#2A9D8F',
+                        baliblue: '#457B9D'
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1D2D44 0%, #0D1B2A 100%);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Aspect Ratio Container (16:9 responsive wrapper) */
+        .stage-container {
+            width: 100vw;
+            height: 56.25vw; /* 16:9 aspect ratio */
+            max-height: 100vh;
+            max-width: 177.78vh;
+            position: relative;
+            background: #FFF9EE;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #E6A100;
+            border-radius: 10px;
+        }
+
+        /* Drag & Drop Visual Styles */
+        .draggable-item {
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            z-index: 50;
+        }
+        .drop-target {
+            transition: all 0.2s ease;
+        }
+        .drop-target.highlight {
+            border-color: #E6A100;
+            background-color: rgba(230, 161, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* Pulse & Float Animations */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(230,161,0,0.6)); }
+            50% { transform: scale(1.04); filter: drop-shadow(0 0 16px rgba(230,161,0,0.9)); }
+        }
+        .pulse-glow {
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Stage Wrapper 16:9 -->
+    <div class="stage-container relative flex flex-col justify-between text-balidark overflow-hidden border-4 border-baligold/50">
+        
+        <!-- HEADER NAVBAR -->
+        <header id="app-header" class="hidden bg-gradient-to-r from-balired via-red-800 to-balired text-white px-3 md:px-4 py-2 flex items-center justify-between shadow-md z-20 shrink-0">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <div class="w-9 h-9 md:w-10 md:h-10 bg-baliyellow text-balired rounded-full flex items-center justify-center font-bold text-lg md:text-xl shadow">
+                    🕉️
+                </div>
+                <div>
+                    <h1 class="text-xs sm:text-sm md:text-base font-bold tracking-wide leading-tight text-baliyellow">LAB MAYA TRI KAYA PARISUDHA</h1>
+                    <p class="text-[10px] sm:text-xs text-red-100 hidden sm:block">Agama Hindu & Budi Pekerti - Fase A (Kelas 2 SD)</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center space-x-1 sm:space-x-1.5">
+                <button onclick="switchTab('teori')" id="tab-btn-teori" class="nav-tab px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 bg-baliyellow text-balired shadow">
+                    <i class="fa-solid fa-book-open"></i> <span class="hidden md:inline">Teori</span>
+                </button>
+                <button onclick="switchTab('prosedur')" id="tab-btn-prosedur" class="nav-tab px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1">
+                    <i class="fa-solid fa-list-check"></i> <span class="hidden md:inline">Prosedur</span>
+                </button>
+                <button onclick="switchTab('simulasi')" id="tab-btn-simulasi" class="nav-tab px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1">
+                    <i class="fa-solid fa-gamepad"></i> <span class="hidden md:inline">Simulasi</span>
+                </button>
+                <button onclick="switchTab('lkpd')" id="tab-btn-lkpd" class="nav-tab px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1">
+                    <i class="fa-solid fa-pen-to-square"></i> <span class="hidden md:inline">LKPD (10 Soal)</span>
+                </button>
+                <button onclick="switchTab('pengembang')" id="tab-btn-pengembang" class="nav-tab px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1">
+                    <i class="fa-solid fa-user-tie"></i> <span class="hidden md:inline">Guru</span>
+                </button>
+            </nav>
+
+            <!-- Sound & Genta Controls -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <button onclick="playGentaSound()" class="bg-baligold hover:bg-yellow-400 text-balidark p-1.5 px-2.5 rounded-full text-xs font-bold shadow flex items-center gap-1 transition" title="Bunyikan Genta Suci">
+                    🔔 <span class="hidden lg:inline text-xs">Genta</span>
+                </button>
+                <button onclick="toggleAudio()" id="btn-audio-toggle" class="bg-white/20 hover:bg-white/30 text-white p-1.5 px-2.5 rounded-full text-xs transition">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN VIEW CONTAINER -->
+        <main class="flex-1 relative overflow-hidden bg-balicream p-2 sm:p-3 md:p-4">
+
+            <!-- SPLASH SCREEN -->
+            <div id="splash-screen" class="absolute inset-0 bg-gradient-to-br from-amber-600 via-red-700 to-amber-900 text-white flex flex-col items-center justify-center p-4 sm:p-6 z-50">
+                <div class="text-center max-w-2xl mx-auto flex flex-col items-center">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-4 border-baliyellow shadow-2xl mb-3 floating">
+                        <span class="text-4xl sm:text-5xl">🕉️</span>
+                    </div>
+
+                    <span class="bg-baliyellow text-balired text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow mb-2">
+                        SD 2 NEGARI • FASE A KELAS 2 SD
+                    </span>
+                    <h1 class="text-xl sm:text-3xl md:text-4xl font-black text-baliyellow drop-shadow-md tracking-wide mb-1">
+                        LAB MAYA TRI KAYA PARISUDHA
+                    </h1>
+                    <h2 class="text-sm sm:text-lg font-bold text-amber-100 mb-3">
+                        Tiga Perbuatan Baik dan Suci yang Harus Kita Amalkan
+                    </h2>
+                    <p class="text-[11px] sm:text-xs text-amber-100/90 max-w-md mb-4 leading-relaxed">
+                        Mari belajar mengenal Manacika (Pikiran Baik), Wacika (Perkataan Baik), dan Kayika (Perbuatan Baik) secara interaktif!
+                    </p>
+
+                    <!-- Progress Bar -->
+                    <div id="loading-box" class="w-56 sm:w-72 bg-black/30 rounded-full h-3.5 p-0.5 mb-4 border border-white/20">
+                        <div id="loading-bar" class="bg-gradient-to-r from-yellow-300 to-baligold h-full rounded-full w-0 transition-all duration-300"></div>
+                    </div>
+
+                    <!-- Start Button -->
+                    <button id="btn-start" onclick="startLabMaya()" class="hidden px-7 py-2.5 bg-baliyellow hover:bg-yellow-300 text-balired font-extrabold text-base rounded-full shadow-xl transition transform hover:scale-105 pulse-glow flex items-center gap-2 border-2 border-white">
+                        <i class="fa-solid fa-play"></i> MULAI BELAJAR
+                    </button>
+                    
+                    <div class="mt-4 text-[11px] text-amber-200/80 font-mono">
+                        Pengembang: Ni Putu Diah Darmayanti, S.Pd. - SD 2 Negari
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: TEORI INTERAKTIF -->
+            <section id="view-teori" class="tab-view h-full flex flex-col justify-between hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-balired flex items-center gap-2">
+                            <span>📖</span> Memahami Pengertian Tri Kaya Parisudha
+                        </h2>
+                        <p class="text-[11px] text-gray-600">Klik kartu di bawah ini untuk mempelajari dan mendengarkan penjelasannya!</p>
+                    </div>
+                    <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-300">
+                        Tri = 3 | Kaya = Perilaku | Parisudha = Suci
+                    </span>
+                </div>
+
+                <!-- Cards 3 Bagian Utama -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3 flex-1 items-stretch my-auto py-1">
+                    
+                    <!-- 1. Manacika -->
+                    <div onclick="playTeoriInfo('manacika')" class="bg-white rounded-xl border-2 border-blue-200 p-3 flex flex-col items-center text-center justify-between shadow-sm hover:shadow-md hover:border-blue-500 transition cursor-pointer group">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-100 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition">
+                            🧠
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-wide">BAGIAN 1</span>
+                            <h3 class="font-extrabold text-sm sm:text-base text-balidark">Manacika Parisudha</h3>
+                            <p class="text-[11px] text-gray-600 mt-1 leading-tight">Berpikiran yang baik, jujur, dan suci. Tidak iri hati atau dendam kepada orang lain.</p>
+                        </div>
+                        <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high"></i> 1. Berpikir Baik
+                        </span>
+                    </div>
+
+                    <!-- 2. Wacika -->
+                    <div onclick="playTeoriInfo('wacika')" class="bg-white rounded-xl border-2 border-green-200 p-3 flex flex-col items-center text-center justify-between shadow-sm hover:shadow-md hover:border-green-500 transition cursor-pointer group">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition">
+                            🗣️
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-extrabold text-green-600 uppercase tracking-wide">BAGIAN 2</span>
+                            <h3 class="font-extrabold text-sm sm:text-base text-balidark">Wacika Parisudha</h3>
+                            <p class="text-[11px] text-gray-600 mt-1 leading-tight">Berkata yang sopan, jujur, dan ramah. Tidak berbohong atau mengejek teman.</p>
+                        </div>
+                        <span class="text-[10px] font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high"></i> 2. Berkata Baik
+                        </span>
+                    </div>
+
+                    <!-- 3. Kayika -->
+                    <div onclick="playTeoriInfo('kayika')" class="bg-white rounded-xl border-2 border-amber-200 p-3 flex flex-col items-center text-center justify-between shadow-sm hover:shadow-md hover:border-amber-500 transition cursor-pointer group">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-amber-100 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition">
+                            🤝
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-extrabold text-amber-600 uppercase tracking-wide">BAGIAN 3</span>
+                            <h3 class="font-extrabold text-sm sm:text-base text-balidark">Kayika Parisudha</h3>
+                            <p class="text-[11px] text-gray-600 mt-1 leading-tight">Berbuat yang baik, menolong sesama, dan berbakti. Tidak menyakiti makhluk lain.</p>
+                        </div>
+                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high"></i> 3. Berbuat Baik
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- Audio Reader Box -->
+                <div id="teori-speech-bubble" class="bg-white border-2 border-baligold rounded-xl p-2.5 shadow-sm flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">💡</span>
+                        <p id="teori-text" class="text-xs font-semibold text-balidark">Klik salah satu bagian Tri Kaya Parisudha di atas untuk mendengarkan penjelasannya!</p>
+                    </div>
+                    <button onclick="readAloudTeori()" class="bg-baliyellow hover:bg-yellow-400 text-balired font-bold px-3 py-1 rounded-lg text-xs flex items-center gap-1 shadow shrink-0">
+                        <i class="fa-solid fa-volume-high"></i> Bacakan
+                    </button>
+                </div>
+            </section>
+
+            <!-- TAB 2: PROSEDUR PENERAPAN -->
+            <section id="view-prosedur" class="tab-view h-full flex flex-col justify-between hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <h2 class="text-base sm:text-lg font-bold text-balired flex items-center gap-2">
+                        <span>📋</span> Penerapan Tri Kaya Parisudha Sehari-hari
+                    </h2>
+                    <span id="prosedur-step-badge" class="bg-baligold text-white text-xs font-bold px-3 py-1 rounded-full">Contoh 1 dari 4</span>
+                </div>
+
+                <!-- Slide Card Display -->
+                <div class="flex-1 flex items-center justify-center py-1">
+                    <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 sm:p-5 shadow-md w-full max-w-2xl flex flex-col sm:flex-row items-center gap-4">
+                        <div id="prosedur-icon" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-amber-100 flex items-center justify-center text-4xl sm:text-5xl border-4 border-baliyellow shrink-0">
+                            🏫
+                        </div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <span id="prosedur-cat" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-300">
+                                Penerapan Di Sekolah
+                            </span>
+                            <h3 id="prosedur-title" class="text-base sm:text-lg font-extrabold text-balired my-1">1. Menyapa Guru & Teman dengan Ramah</h3>
+                            <p id="prosedur-desc" class="text-xs text-gray-700 leading-relaxed mb-3">
+                                Mengucapkan salam "Om Swastyastu" dengan sopan saat bertemu guru dan teman di sekolah adalah contoh pengamalan Wacika Parisudha (Perkataan Baik).
+                            </p>
+                            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200 text-xs text-amber-900 font-medium">
+                                ✨ <b>Pesan Moral:</b> Kata-kata yang santun membuat suasana sekolah menjadi damai!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Steps Navigation Buttons -->
+                <div class="flex justify-between items-center">
+                    <button onclick="prevProsedurStep()" id="btn-prev-step" class="px-3.5 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-xs transition flex items-center gap-1.5 opacity-50 cursor-not-allowed">
+                        <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+                    </button>
+                    <div class="flex space-x-1.5" id="prosedur-dots">
+                        <span class="w-2.5 h-2.5 rounded-full bg-baligold"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span>
+                    </div>
+                    <button onclick="nextProsedurStep()" id="btn-next-step" class="px-3.5 py-1.5 bg-balired hover:bg-red-800 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                        Lanjutnya <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- TAB 3: SIMULASI GAME MEMILAH PERILAKU -->
+            <section id="view-simulasi" class="tab-view h-full flex flex-col justify-between hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-balired flex items-center gap-2">
+                            <span>🎮</span> Game Memilah Perilaku Tri Kaya Parisudha
+                        </h2>
+                        <p class="text-[11px] text-gray-600">Geser (Drag) atau Ketuk kartunya, lalu pilih keranjang yang pas!</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="bg-amber-100 border border-amber-300 rounded-lg px-2.5 py-1 flex items-center gap-1 text-xs font-bold text-amber-900">
+                            ⭐ Skor: <span id="sim-score" class="text-balired text-sm">0</span>/6
+                        </div>
+                        <button onclick="resetSimulasi()" class="bg-red-100 hover:bg-red-200 text-balired text-xs font-bold px-2.5 py-1 rounded-lg border border-red-300 flex items-center gap-1 transition">
+                            <i class="fa-solid fa-rotate-right"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simulation Main Playing Zone -->
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2.5 items-stretch my-1">
+                    
+                    <!-- Left Column: Available Cards Pool -->
+                    <div class="bg-white/90 backdrop-blur rounded-xl p-2 border-2 border-amber-200 flex flex-col justify-start items-center gap-1.5 overflow-y-auto custom-scroll">
+                        <h3 class="text-xs font-bold text-balired border-b border-amber-200 pb-1 w-full text-center">
+                            Daftar Perilaku
+                        </h3>
+                        
+                        <div id="sim-cards-container" class="w-full flex flex-col gap-1.5">
+                            <!-- Cards inserted by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right 3 Columns: Drop Target Baskets -->
+                    <div class="md:col-span-3 grid grid-cols-3 gap-2">
+                        
+                        <!-- Basket 1: Manacika -->
+                        <div id="target-manacika" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'manacika')" onclick="handleBasketClick('manacika')" class="drop-target bg-blue-50/90 border-2 border-dashed border-blue-400 rounded-xl p-2 flex flex-col items-center justify-between text-center relative shadow-sm cursor-pointer hover:bg-blue-100/50">
+                            <div class="bg-blue-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow mb-1">
+                                🧠 MANACIKA
+                            </div>
+                            <p class="text-[10px] text-blue-900 font-medium">Berpikir Baik & Suci</p>
+                            <div id="basket-manacika-items" class="w-full flex flex-col gap-1 my-1 flex-1 justify-center">
+                                <!-- Placed items -->
+                            </div>
+                            <span class="text-[9px] text-blue-700 bg-white/80 px-2 py-0.5 rounded border border-blue-200">Ketuk / Taruh Sini</span>
+                        </div>
+
+                        <!-- Basket 2: Wacika -->
+                        <div id="target-wacika" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'wacika')" onclick="handleBasketClick('wacika')" class="drop-target bg-green-50/90 border-2 border-dashed border-green-400 rounded-xl p-2 flex flex-col items-center justify-between text-center relative shadow-sm cursor-pointer hover:bg-green-100/50">
+                            <div class="bg-green-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow mb-1">
+                                🗣️ WACIKA
+                            </div>
+                            <p class="text-[10px] text-green-900 font-medium">Berkata Baik & Sopan</p>
+                            <div id="basket-wacika-items" class="w-full flex flex-col gap-1 my-1 flex-1 justify-center">
+                                <!-- Placed items -->
+                            </div>
+                            <span class="text-[9px] text-green-700 bg-white/80 px-2 py-0.5 rounded border border-green-200">Ketuk / Taruh Sini</span>
+                        </div>
+
+                        <!-- Basket 3: Kayika -->
+                        <div id="target-kayika" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'kayika')" onclick="handleBasketClick('kayika')" class="drop-target bg-amber-50/90 border-2 border-dashed border-amber-400 rounded-xl p-2 flex flex-col items-center justify-between text-center relative shadow-sm cursor-pointer hover:bg-amber-100/50">
+                            <div class="bg-amber-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow mb-1">
+                                🤝 KAYIKA
+                            </div>
+                            <p class="text-[10px] text-amber-900 font-medium">Berbuat Baik & Menolong</p>
+                            <div id="basket-kayika-items" class="w-full flex flex-col gap-1 my-1 flex-1 justify-center">
+                                <!-- Placed items -->
+                            </div>
+                            <span class="text-[9px] text-amber-700 bg-white/80 px-2 py-0.5 rounded border border-amber-200">Ketuk / Taruh Sini</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Simulation Status Footer -->
+                <div id="sim-feedback" class="bg-white border border-amber-300 rounded-lg p-1.5 text-center text-xs font-bold text-balired h-7 flex items-center justify-center shadow-sm">
+                    Pilih salah satu kartu perilaku di kiri, lalu masukkan ke kelompok Tri Kaya Parisudha yang benar!
+                </div>
+            </section>
+
+            <!-- TAB 4: LKPD (10 SOAL PILIHAN GANDA) -->
+            <section id="view-lkpd" class="tab-view h-full flex flex-col justify-between hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-balired flex items-center gap-2">
+                            <span>📝</span> LKPD: Kuis Evaluasi (10 Soal Pilihan Ganda)
+                        </h2>
+                        <p class="text-[10px] sm:text-[11px] text-gray-600">Pilih jawaban A, B, atau C yang paling tepat!</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="lkpd-progress-badge" class="bg-baligold text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                            Soal 1 / 10
+                        </span>
+                        <button onclick="resetLKPD()" class="bg-red-100 hover:bg-red-200 text-balired text-xs font-bold px-2.5 py-1 rounded-lg border border-red-300 flex items-center gap-1 transition">
+                            <i class="fa-solid fa-rotate-right"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Question View Box -->
+                <div class="flex-1 flex flex-col justify-between bg-white border-2 border-amber-200 rounded-xl p-3 shadow-sm my-1 overflow-hidden">
+                    
+                    <!-- Question Title Header -->
+                    <div class="flex items-start gap-3">
+                        <div id="quiz-num-badge" class="w-9 h-9 rounded-full bg-baliyellow text-balired font-black text-base flex items-center justify-center shrink-0 border-2 border-baligold shadow">
+                            1
+                        </div>
+                        <h3 id="quiz-question-text" class="text-xs sm:text-sm font-extrabold text-balidark pt-1 leading-snug">
+                            Loading pertanyaan...
+                        </h3>
+                    </div>
+
+                    <!-- 3 Multiple Choice Options -->
+                    <div class="grid grid-cols-1 gap-1.5 my-2">
+                        <button onclick="selectOption('A')" id="btn-opt-A" class="quiz-opt-btn p-2 rounded-xl border-2 border-amber-200 hover:border-baligold hover:bg-amber-50 text-left flex items-center gap-3 transition">
+                            <span class="w-6 h-6 rounded-full bg-amber-100 font-bold text-xs text-amber-900 flex items-center justify-center shrink-0">A</span>
+                            <span id="text-opt-A" class="text-xs font-medium text-gray-800">Option A</span>
+                        </button>
+
+                        <button onclick="selectOption('B')" id="btn-opt-B" class="quiz-opt-btn p-2 rounded-xl border-2 border-amber-200 hover:border-baligold hover:bg-amber-50 text-left flex items-center gap-3 transition">
+                            <span class="w-6 h-6 rounded-full bg-amber-100 font-bold text-xs text-amber-900 flex items-center justify-center shrink-0">B</span>
+                            <span id="text-opt-B" class="text-xs font-medium text-gray-800">Option B</span>
+                        </button>
+
+                        <button onclick="selectOption('C')" id="btn-opt-C" class="quiz-opt-btn p-2 rounded-xl border-2 border-amber-200 hover:border-baligold hover:bg-amber-50 text-left flex items-center gap-3 transition">
+                            <span class="w-6 h-6 rounded-full bg-amber-100 font-bold text-xs text-amber-900 flex items-center justify-center shrink-0">C</span>
+                            <span id="text-opt-C" class="text-xs font-medium text-gray-800">Option C</span>
+                        </button>
+                    </div>
+
+                    <!-- Quiz Navigation Controls -->
+                    <div class="flex justify-between items-center border-t border-amber-100 pt-2">
+                        <button onclick="prevQuizQuestion()" id="btn-prev-quiz" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg text-xs transition flex items-center gap-1 opacity-50 cursor-not-allowed">
+                            <i class="fa-solid fa-arrow-left"></i> Soal Lalu
+                        </button>
+                        
+                        <!-- Question Pagination Quick Dots -->
+                        <div id="quiz-dots-nav" class="hidden sm:flex items-center gap-1 overflow-x-auto max-w-[200px] px-1">
+                            <!-- Quick dots 1-10 generated by JS -->
+                        </div>
+
+                        <button onclick="nextQuizQuestion()" id="btn-next-quiz" class="px-3 py-1 bg-balired hover:bg-red-800 text-white font-bold rounded-lg text-xs shadow transition flex items-center gap-1">
+                            Soal Lanjut <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Final Score Result Banner -->
+                <div id="lkpd-score-footer" class="bg-amber-100 border border-amber-300 rounded-xl p-2 flex items-center justify-between">
+                    <div class="text-xs font-bold text-amber-900 flex items-center gap-2">
+                        <span>Nilai LKPD:</span>
+                        <span id="lkpd-final-score" class="text-balired text-sm font-black bg-white px-2 py-0.5 rounded border border-amber-300">0</span> / 100
+                    </div>
+                    <div id="lkpd-star-rating" class="text-amber-500 text-xs font-bold flex items-center gap-1">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                    <button onclick="checkAllQuiz()" class="bg-baligreen hover:bg-teal-700 text-white font-extrabold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> Periksa Nilai
+                    </button>
+                </div>
+            </section>
+
+            <!-- TAB 5: PENGEMBANG -->
+            <section id="view-pengembang" class="tab-view h-full flex flex-col justify-between hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <h2 class="text-base sm:text-lg font-bold text-balired flex items-center gap-2">
+                        <span>👩‍🏫</span> Profil Pengembang Lab Maya
+                    </h2>
+                    <span class="bg-baliyellow text-balired text-xs font-bold px-3 py-1 rounded-full shadow">
+                        SD 2 NEGARI
+                    </span>
+                </div>
+
+                <!-- Profile Card -->
+                <div class="flex-1 bg-white border-2 border-amber-300 rounded-2xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row items-center gap-5 my-auto">
+                    <!-- Profile Avatar Icon -->
+                    <div class="relative shrink-0">
+                        <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-baligold via-red-600 to-balired p-1 shadow-lg">
+                            <div class="w-full h-full rounded-full bg-white flex items-center justify-center text-5xl sm:text-6xl">
+                                👩‍🏫
+                            </div>
+                        </div>
+                        <span class="absolute bottom-0 right-0 bg-baligreen text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow">
+                            Guru Agama
+                        </span>
+                    </div>
+
+                    <!-- Profile Bio Info -->
+                    <div class="flex-1 text-center sm:text-left space-y-1.5">
+                        <div>
+                            <h3 class="text-lg sm:text-2xl font-black text-balired">Ni Putu Diah Darmayanti, S.Pd.</h3>
+                            <p class="text-xs sm:text-sm font-semibold text-baligold">Guru Agama Hindu & Budi Pekerti</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+                                <span class="text-gray-500 block text-[9px]">INSTANSI SEKOLAH:</span>
+                                <span class="font-bold text-balidark">SD 2 Negari</span>
+                            </div>
+                            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+                                <span class="text-gray-500 block text-[9px]">TARGET FASE BELAJAR:</span>
+                                <span class="font-bold text-balidark">Fase A (Kelas 2 SD)</span>
+                            </div>
+                            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+                                <span class="text-gray-500 block text-[9px]">TOPIK MATERI:</span>
+                                <span class="font-bold text-balidark">Tri Kaya Parisudha</span>
+                            </div>
+                            <div class="bg-amber-50 p-2 rounded-lg border border-amber-200">
+                                <span class="text-gray-500 block text-[9px]">TEKNOLOGI LAB:</span>
+                                <span class="font-bold text-balidark">HTML5 & Web Audio (Offline)</span>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-gray-600 italic pt-1">
+                            "Mewujudkan pembelajaran Pendidikan Agama Hindu yang menyenangkan, bermakna, dan mudah dipahami bagi siswa SD 2 Negari."
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER STATUS BAR -->
+        <footer id="app-footer" class="hidden bg-amber-100 border-t border-amber-300 px-4 py-1 flex items-center justify-between text-[10px] sm:text-xs text-amber-900 shrink-0">
+            <div>
+                📍 <b>SD 2 Negari</b> • Lab Maya Pendidikan Agama Hindu
+            </div>
+            <div class="flex items-center gap-2">
+                <span>Pengembang: <b>Ni Putu Diah Darmayanti, S.Pd.</b></span>
+                <span class="bg-baligold/20 px-2 py-0.5 rounded font-mono text-[9px]">v2.0 Standalone</span>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. WEB AUDIO API SYNTHESIZER (NO EXTERNAL FILES REQUIRED)
+           ========================================================================== */
+        let audioCtx = null;
+        let isAudioMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playClickSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(250, audioCtx.currentTime + 0.06);
+            
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.06);
+        }
+
+        function playGentaSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+            const freqs = [1046.50, 2093.00, 3135.96]; // Genta harmonics
+            
+            freqs.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                
+                const initialGain = idx === 0 ? 0.3 : 0.1;
+                gain.gain.setValueAtTime(initialGain, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 2.2);
+            });
+        }
+
+        function playSuccessSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                
+                gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now + i * 0.1);
+                osc.stop(now + i * 0.1 + 0.35);
+            });
+        }
+
+        function playWrongSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.25);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.25);
+        }
+
+        function toggleAudio() {
+            isAudioMuted = !isAudioMuted;
+            const btn = document.getElementById('btn-audio-toggle');
+            if (isAudioMuted) {
+                btn.innerHTML = '<i class="fa-solid fa-volume-xmark text-red-300"></i>';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                playClickSound();
+            }
+        }
+
+
+        /* ==========================================================================
+           2. SPLASH SCREEN & INITIALIZATION
+           ========================================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            const loadingBar = document.getElementById('loading-bar');
+            const btnStart = document.getElementById('btn-start');
+            const loadingBox = document.getElementById('loading-box');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 25;
+                loadingBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loadingBox.classList.add('hidden');
+                        btnStart.classList.remove('hidden');
+                    }, 300);
+                }
+            }, 180);
+
+            initSimulasiCards();
+            initQuizUI();
+        });
+
+        function startLabMaya() {
+            playGentaSound();
+            document.getElementById('splash-screen').classList.add('hidden');
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('app-header').classList.add('flex');
+            document.getElementById('app-footer').classList.remove('hidden');
+            document.getElementById('app-footer').classList.add('flex');
+            switchTab('teori');
+        }
+
+
+        /* ==========================================================================
+           3. TAB NAVIGATION CONTROLLER
+           ========================================================================== */
+        function switchTab(tabId) {
+            playClickSound();
+            
+            const tabs = document.querySelectorAll('.tab-view');
+            tabs.forEach(t => t.classList.add('hidden'));
+
+            const navBtns = document.querySelectorAll('.nav-tab');
+            navBtns.forEach(btn => {
+                btn.classList.remove('bg-baliyellow', 'text-balired', 'shadow');
+                btn.classList.add('hover:bg-white/10');
+            });
+
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-baliyellow', 'text-balired', 'shadow');
+                activeBtn.classList.remove('hover:bg-white/10');
+            }
+        }
+
+
+        /* ==========================================================================
+           4. TAB 1: TEORI LOGIC & TEXT-TO-SPEECH
+           ========================================================================== */
+        const teoriData = {
+            manacika: "Manacika Parisudha artinya berpikir yang baik dan suci. Contohnya tidak iri hati, menyayangi teman, dan selalu berpikir positif.",
+            wacika: "Wacika Parisudha artinya berkata yang baik dan sopan. Contohnya mengucapkan salam Swastyastu, jujur, dan tidak berbohong.",
+            kayika: "Kayika Parisudha artinya berbuat yang baik dan menolong. Contohnya membantu orang tua, merawat tanaman, dan menolong teman."
+        };
+
+        function playTeoriInfo(key) {
+            playClickSound();
+            const text = teoriData[key];
+            document.getElementById('teori-text').innerText = text;
+            readAloudTeori();
+        }
+
+        function readAloudTeori() {
+            const text = document.getElementById('teori-text').innerText;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+
+        /* ==========================================================================
+           5. TAB 2: PROSEDUR LANGKAH-LANGKAH
+           ========================================================================== */
+        const prosedurSteps = [
+            {
+                step: 1,
+                cat: "Penerapan Di Sekolah",
+                title: "1. Menyapa Guru & Teman dengan Ramah",
+                desc: "Mengucapkan salam 'Om Swastyastu' dengan sopan saat bertemu guru dan teman di sekolah adalah pengamalan Wacika Parisudha (Berkata Baik).",
+                icon: "🏫"
+            },
+            {
+                step: 2,
+                cat: "Penerapan Di Rumah",
+                title: "2. Menolong Orang Tua Membersihkan Rumah",
+                desc: "Membantu ibu menyapu halaman dan merapikan mainan adalah contoh nyata pengamalan Kayika Parisudha (Berbuat Baik).",
+                icon: "🏠"
+            },
+            {
+                step: 3,
+                cat: "Penerapan Pikiran",
+                title: "3. Mendoakan Teman yang Sedang Sakit",
+                desc: "Selalu mendoakan kebaikan bagi orang lain tanpa rasa iri adalah contoh pengamalan Manacika Parisudha (Berpikir Baik).",
+                icon: "🙏"
+            },
+            {
+                step: 4,
+                cat: "Penerapan Di Masyarakat",
+                title: "4. Menjaga Kebersihan Lingkungan Tempat Ibadah",
+                desc: "Ikut serta merawat kebersihan pura atau tempat ibadah adalah wujud bakti dan perilaku suci bersama.",
+                icon: "🛕"
+            }
+        ];
+
+        let currentStepIdx = 0;
+
+        function updateProsedurUI() {
+            const item = prosedurSteps[currentStepIdx];
+            document.getElementById('prosedur-title').innerText = item.title;
+            document.getElementById('prosedur-desc').innerText = item.desc;
+            document.getElementById('prosedur-icon').innerText = item.icon;
+            document.getElementById('prosedur-cat').innerText = item.cat;
+            document.getElementById('prosedur-step-badge').innerText = `Contoh ${item.step} dari 4`;
+
+            const dotsContainer = document.getElementById('prosedur-dots');
+            dotsContainer.innerHTML = '';
+            prosedurSteps.forEach((_, idx) => {
+                const dot = document.createElement('span');
+                dot.className = `w-2.5 h-2.5 rounded-full ${idx === currentStepIdx ? 'bg-baligold' : 'bg-gray-300'}`;
+                dotsContainer.appendChild(dot);
+            });
+
+            const prevBtn = document.getElementById('btn-prev-step');
+            const nextBtn = document.getElementById('btn-next-step');
+
+            if (currentStepIdx === 0) {
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentStepIdx === prosedurSteps.length - 1) {
+                nextBtn.innerText = 'Selesai ✨';
+            } else {
+                nextBtn.innerHTML = 'Lanjutnya <i class="fa-solid fa-arrow-right"></i>';
+            }
+        }
+
+        function nextProsedurStep() {
+            playClickSound();
+            if (currentStepIdx < prosedurSteps.length - 1) {
+                currentStepIdx++;
+                updateProsedurUI();
+            } else {
+                playSuccessSound();
+                switchTab('simulasi');
+            }
+        }
+
+        function prevProsedurStep() {
+            playClickSound();
+            if (currentStepIdx > 0) {
+                currentStepIdx--;
+                updateProsedurUI();
+            }
+        }
+
+
+        /* ==========================================================================
+           6. TAB 3: SIMULASI GAME MEMILAH PERILAKU
+           ========================================================================== */
+        const simData = [
+            { id: 'item1', label: 'Mendoakan Teman', category: 'manacika', icon: '🧠' },
+            { id: 'item2', label: 'Berkata Jujur', category: 'wacika', icon: '🗣️' },
+            { id: 'item3', label: 'Menolong Teman', category: 'kayika', icon: '🤝' },
+            { id: 'item4', label: 'Tidak Iri Hati', category: 'manacika', icon: '💖' },
+            { id: 'item5', label: 'Ucap Swastyastu', category: 'wacika', icon: '🙏' },
+            { id: 'item6', label: 'Menyapu Halaman', category: 'kayika', icon: '🧹' }
+        ];
+
+        let selectedSimCardId = null;
+        let simPlacedCount = 0;
+
+        function initSimulasiCards() {
+            const container = document.getElementById('sim-cards-container');
+            container.innerHTML = '';
+            
+            simData.forEach(item => {
+                const card = document.createElement('div');
+                card.id = 'sim-' + item.id;
+                card.draggable = true;
+                card.ondragstart = (e) => handleDragStart(e, item.id);
+                card.onclick = () => selectSimCard(item.id);
+                card.className = "draggable-item bg-amber-50 border-2 border-amber-300 rounded-lg p-1.5 text-center shadow-sm hover:border-baligold flex items-center justify-between text-xs cursor-pointer";
+                card.innerHTML = `
+                    <span class="font-bold text-balidark text-[11px]">${item.icon} ${item.label}</span>
+                    <i class="fa-solid fa-hand-pointer text-amber-500 text-[10px]"></i>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectSimCard(id) {
+            playClickSound();
+            selectedSimCardId = id;
+
+            // Highlight selected card
+            simData.forEach(item => {
+                const el = document.getElementById('sim-' + item.id);
+                if (el) {
+                    if (item.id === id) {
+                        el.classList.add('border-balired', 'bg-yellow-100', 'ring-2', 'ring-baligold');
+                    } else {
+                        el.classList.remove('border-balired', 'bg-yellow-100', 'ring-2', 'ring-baligold');
+                    }
+                }
+            });
+
+            document.getElementById('sim-feedback').innerText = `Kartu "${simData.find(x => x.id === id).label}" dipilih. Sekarang ketuk keranjang yang tepat!`;
+        }
+
+        function handleDragStart(e, id) {
+            selectedSimCardId = id;
+            e.dataTransfer.setData('text/plain', id);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('highlight');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('highlight');
+        }
+
+        function handleDrop(e, targetCat) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('highlight');
+            const id = e.dataTransfer.getData('text/plain') || selectedSimCardId;
+            processPlacement(id, targetCat);
+        }
+
+        function handleBasketClick(targetCat) {
+            if (!selectedSimCardId) {
+                playWrongSound();
+                document.getElementById('sim-feedback').innerText = "❌ Pilih dulu kartu perilaku di sebelah kiri!";
+                return;
+            }
+            processPlacement(selectedSimCardId, targetCat);
+        }
+
+        function processPlacement(cardId, targetCat) {
+            const item = simData.find(x => x.id === cardId);
+            if (!item) return;
+
+            if (item.category === targetCat) {
+                // Correct match
+                playSuccessSound();
+                
+                // Move element into basket
+                const cardEl = document.getElementById('sim-' + cardId);
+                if (cardEl) cardEl.remove();
+
+                const basketItems = document.getElementById(`basket-${targetCat}-items`);
+                const placedTag = document.createElement('div');
+                placedTag.className = "bg-white border border-green-400 text-green-800 text-[10px] font-bold py-0.5 px-1.5 rounded shadow-sm animate-bounce flex items-center justify-between";
+                placedTag.innerHTML = `<span>${item.icon} ${item.label}</span> ✅`;
+                basketItems.appendChild(placedTag);
+
+                selectedSimCardId = null;
+                simPlacedCount++;
+                document.getElementById('sim-score').innerText = simPlacedCount;
+
+                if (simPlacedCount === simData.length) {
+                    playSuccessSound();
+                    document.getElementById('sim-feedback').innerHTML = "🎉 <b>Hore! Selamat Kamu Berhasil Memilah Semua Perilaku Tri Kaya Parisudha!</b> 🎉";
+                } else {
+                    document.getElementById('sim-feedback').innerText = `Hebat! "${item.label}" sesuai dengan ${targetCat.toUpperCase()}.`;
+                }
+
+            } else {
+                // Incorrect match
+                playWrongSound();
+                document.getElementById('sim-feedback').innerText = `❌ Kurang tepat! "${item.label}" bukan bagian dari ${targetCat.toUpperCase()}. Coba lagi!`;
+            }
+        }
+
+        function resetSimulasi() {
+            playClickSound();
+            selectedSimCardId = null;
+            simPlacedCount = 0;
+            document.getElementById('sim-score').innerText = '0';
+            document.getElementById('basket-manacika-items').innerHTML = '';
+            document.getElementById('basket-wacika-items').innerHTML = '';
+            document.getElementById('basket-kayika-items').innerHTML = '';
+            document.getElementById('sim-feedback').innerText = "Pilih salah satu kartu perilaku di kiri, lalu masukkan ke kelompok Tri Kaya Parisudha yang benar!";
+            initSimulasiCards();
+        }
+
+
+        /* ==========================================================================
+           7. TAB 4: LKPD (10 SOAL PILIHAN GANDA)
+           ========================================================================== */
+        const quizData = [
+            {
+                q: "1. Tri Kaya Parisudha artinya tiga perilaku yang...",
+                a: "Buruk dan jahat",
+                b: "Baik dan disucikan",
+                c: "Lucu dan aneh",
+                ans: "B"
+            },
+            {
+                q: "2. Bagian Tri Kaya Parisudha yang artinya 'Berpikir yang baik' adalah...",
+                a: "Manacika",
+                b: "Wacika",
+                c: "Kayika",
+                ans: "A"
+            },
+            {
+                q: "3. Mengucapkan salam 'Om Swastyastu' dengan sopan merupakan contoh...",
+                a: "Kayika Parisudha",
+                b: "Manacika Parisudha",
+                c: "Wacika Parisudha",
+                ans: "C"
+            },
+            {
+                q: "4. Menolong teman yang terjatuh di halaman sekolah adalah contoh...",
+                a: "Kayika Parisudha",
+                b: "Wacika Parisudha",
+                c: "Manacika Parisudha",
+                ans: "A"
+            },
+            {
+                q: "5. Manacika Parisudha mengajarkan kita untuk tidak memiliki rasa...",
+                a: "Sayang dan cinta",
+                b: "Iri hati dan dendam",
+                c: "Jujur dan ramah",
+                ans: "B"
+            },
+            {
+                q: "6. Kata 'Wacika' dalam Tri Kaya Parisudha memiliki arti...",
+                a: "Perbuatan",
+                b: "Pikiran",
+                c: "Perkataan",
+                ans: "C"
+            },
+            {
+                q: "7. Berbohong atau mengejek teman termasuk perbuatan yang...",
+                a: "Melanggar Wacika Parisudha",
+                b: "Sesuai Kayika Parisudha",
+                c: "Sangat terpuji",
+                ans: "A"
+            },
+            {
+                q: "8. Contoh penerapan Kayika Parisudha di rumah adalah...",
+                a: "Menyapu halaman rumah",
+                b: "Mengejek adik",
+                c: "Berpikir buruk",
+                ans: "A"
+            },
+            {
+                q: "9. Kata 'Kayika' memiliki arti perilaku yang dilakukan oleh...",
+                a: "Mulut/Perkataan",
+                b: "Anggota Badan/Perbuatan",
+                c: "Pikiran saja",
+                ans: "B"
+            },
+            {
+                q: "10. Tujuan kita mengamalkan Tri Kaya Parisudha adalah agar hidup menjadi...",
+                a: "Sedih dan bertengkar",
+                b: "Damai, rukun, dan bahagia",
+                c: "Marah-marah",
+                ans: "B"
+            }
+        ];
+
+        let currentQuizIdx = 0;
+        let userAnswers = Array(10).fill(null);
+
+        function initQuizUI() {
+            // Render Dots quick nav
+            const dotsNav = document.getElementById('quiz-dots-nav');
+            dotsNav.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const btnDot = document.createElement('button');
+                btnDot.className = `w-5 h-5 rounded-full text-[10px] font-bold border ${i === 0 ? 'bg-baligold text-white border-balired' : 'bg-gray-100 text-gray-600 border-gray-300'}`;
+                btnDot.id = 'quiz-dot-' + i;
+                btnDot.innerText = i + 1;
+                btnDot.onclick = () => jumpToQuiz(i);
+                dotsNav.appendChild(btnDot);
+            }
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const item = quizData[currentQuizIdx];
+            document.getElementById('quiz-num-badge').innerText = currentQuizIdx + 1;
+            document.getElementById('quiz-question-text').innerText = item.q;
+            document.getElementById('text-opt-A').innerText = item.a;
+            document.getElementById('text-opt-B').innerText = item.b;
+            document.getElementById('text-opt-C').innerText = item.c;
+
+            document.getElementById('lkpd-progress-badge').innerText = `Soal ${currentQuizIdx + 1} / 10`;
+
+            // Reset option styling
+            ['A', 'B', 'C'].forEach(opt => {
+                const btn = document.getElementById('btn-opt-' + opt);
+                btn.className = "quiz-opt-btn p-2 rounded-xl border-2 border-amber-200 hover:border-baligold hover:bg-amber-50 text-left flex items-center gap-3 transition";
+            });
+
+            // Highlight if answered
+            const selected = userAnswers[currentQuizIdx];
+            if (selected) {
+                const activeBtn = document.getElementById('btn-opt-' + selected);
+                activeBtn.className = "quiz-opt-btn p-2 rounded-xl border-2 border-balired bg-amber-100 font-bold text-left flex items-center gap-3 transition shadow-sm";
+            }
+
+            // Update Quick Dots
+            for (let i = 0; i < 10; i++) {
+                const dot = document.getElementById('quiz-dot-' + i);
+                if (i === currentQuizIdx) {
+                    dot.className = "w-5 h-5 rounded-full text-[10px] font-bold bg-balired text-white border border-baligold shadow";
+                } else if (userAnswers[i] !== null) {
+                    dot.className = "w-5 h-5 rounded-full text-[10px] font-bold bg-green-500 text-white border border-green-600";
+                } else {
+                    dot.className = "w-5 h-5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-300";
+                }
+            }
+
+            // Update Next / Prev buttons
+            const prevBtn = document.getElementById('btn-prev-quiz');
+            const nextBtn = document.getElementById('btn-next-quiz');
+
+            if (currentQuizIdx === 0) {
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentQuizIdx === 9) {
+                nextBtn.innerHTML = 'Periksa Nilai <i class="fa-solid fa-check"></i>';
+            } else {
+                nextBtn.innerHTML = 'Soal Lanjut <i class="fa-solid fa-arrow-right"></i>';
+            }
+        }
+
+        function selectOption(opt) {
+            playClickSound();
+            userAnswers[currentQuizIdx] = opt;
+            renderQuestion();
+        }
+
+        function nextQuizQuestion() {
+            playClickSound();
+            if (currentQuizIdx < 9) {
+                currentQuizIdx++;
+                renderQuestion();
+            } else {
+                checkAllQuiz();
+            }
+        }
+
+        function prevQuizQuestion() {
+            playClickSound();
+            if (currentQuizIdx > 0) {
+                currentQuizIdx--;
+                renderQuestion();
+            }
+        }
+
+        function jumpToQuiz(idx) {
+            playClickSound();
+            currentQuizIdx = idx;
+            renderQuestion();
+        }
+
+        function checkAllQuiz() {
+            let correctCount = 0;
+            userAnswers.forEach((ans, idx) => {
+                if (ans === quizData[idx].ans) {
+                    correctCount++;
+                }
+            });
+
+            const finalScore = correctCount * 10;
+            document.getElementById('lkpd-final-score').innerText = finalScore;
+
+            // Star rating calculation
+            const starEl = document.getElementById('lkpd-star-rating');
+            if (finalScore >= 90) {
+                playSuccessSound();
+                starEl.innerHTML = "⭐⭐⭐⭐⭐ <span class='text-green-700 font-bold ml-1'>Sangat Sempurna!</span>";
+            } else if (finalScore >= 70) {
+                playSuccessSound();
+                starEl.innerHTML = "⭐⭐⭐⭐ <span class='text-amber-700 font-bold ml-1'>Bagus Sekali!</span>";
+            } else if (finalScore >= 50) {
+                playClickSound();
+                starEl.innerHTML = "⭐⭐⭐ <span class='text-amber-700 font-bold ml-1'>Cukup Baik!</span>";
+            } else {
+                playWrongSound();
+                starEl.innerHTML = "⭐⭐ <span class='text-red-700 font-bold ml-1'>Belajar Lagi Ya!</span>";
+            }
+        }
+
+        function resetLKPD() {
+            playClickSound();
+            userAnswers = Array(10).fill(null);
+            currentQuizIdx = 0;
+            document.getElementById('lkpd-final-score').innerText = '0';
+            document.getElementById('lkpd-star-rating').innerHTML = '⭐⭐⭐⭐⭐';
+            renderQuestion();
+        }
+    </script>
+</body>
+</html>
